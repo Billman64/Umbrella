@@ -57,14 +57,13 @@ public class MainActivity extends AppCompatActivity {
             public void run() {
 
                 String strResult = "";
-                Toast.makeText(MainActivity.this, "aaa", Toast.LENGTH_SHORT).show();
                 try {
 
                     URL url = new URL(strUrl);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();    // needs to run on a thread
 
 
-                    connection.addRequestProperty("api-key", getString(R.string.api_key));
+                    connection.addRequestProperty("x-api-key", getString(R.string.api_key));
 
                     strResult = "error: before buffered reader";
                     BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())); //???
@@ -109,6 +108,9 @@ public class MainActivity extends AppCompatActivity {
 
             }
         } );    // end of thread
+
+        t.run();
+
 
         btn.setText("Refresh");
 
