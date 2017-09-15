@@ -67,15 +67,16 @@ public class MainActivity extends AppCompatActivity {
                     strResult = "error: before InputStreamReader";
 
                     // Error - MainThread Exception somehow
+
                     InputStreamReader isr = new InputStreamReader(connection.getInputStream()) {
                         @Override
                         public int read() throws IOException {
-//                            Toast.makeText(MainActivity.this, "InputStreamReader error", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(MainActivity.this, "InputStreamReader error", Toast.LENGTH_SHORT).show();
                             Log.d ("myError","inputStreamReader error");
                             return 0;
                         }
                     };
-
+                    Log.d("connection",connection.toString());
 //                    Reader rdr = new InputStreamReader(isr);
 
                     strResult = "error: before buffered reader";
@@ -90,29 +91,32 @@ public class MainActivity extends AppCompatActivity {
                         json.append(tmp).append("\n");
                     }
                     reader.close();
-
+                    strResult = "error: after readLine loop";
 
 
                     JSONObject data = new JSONObject(json.toString());
+                    strResult = "error: after JSONObject initialization";
 
                     if (data.length()==0) {
                         strResult = "error: zero-length data";
                         Toast.makeText(getApplication().getApplicationContext(), strResult, Toast.LENGTH_SHORT).show();
                     } else {
-                        TextView tv = (TextView) findViewById(R.id.tvBanner);
+//                        TextView tv = (TextView) findViewById(R.id.tvBanner);
+                        strResult = "error after data length>0";
 
 
-                        tv.setText(data.length());
-                        Toast.makeText(getApplication().getApplicationContext(), "asdf", Toast.LENGTH_SHORT).show();
+//                        tv.setText(data.length());
+//                        Toast.makeText(getApplication().getApplicationContext(), "data length: " + data.length(), Toast.LENGTH_SHORT).show();
                     }
 
 
 
                 } catch (Exception e) {
-                        TextView tv = (TextView) findViewById(R.id.tvBanner);
-                        tv.setText(strResult + "\n" + e.toString());
+//                        TextView tv = (TextView) findViewById(R.id.tvBanner);
+//                        tv.setText(strResult + "\n" + e.toString());
                         Log.d("MyError","Data pull not working (maybe network connection issue?" + e.toString());
-                    Toast.makeText(MainActivity.this, strResult + "\n" + e.toString(), Toast.LENGTH_SHORT).show();
+                        Log.d("MyErrorLocation", strResult);
+//                    Toast.makeText(MainActivity.this, strResult + "\n" + e.toString(), Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -122,7 +126,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         } );    // end of thread
-        t.run();
+        t.start();
         btn.setText("Refresh");
 
     }
