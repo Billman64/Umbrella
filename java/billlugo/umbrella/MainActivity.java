@@ -2,6 +2,7 @@ package billlugo.umbrella;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -13,6 +14,7 @@ import android.widget.Toast;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -62,11 +64,23 @@ public class MainActivity extends AppCompatActivity {
                     URL url = new URL(strUrl);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();    // needs to run on a thread
 
+                    strResult = "error: before InputStreamReader";
 
-                    connection.addRequestProperty("x-api-key", getString(R.string.api_key));
+                    // Error - MainThread Exception somehow
+                    InputStreamReader isr = new InputStreamReader(connection.getInputStream()) {
+                        @Override
+                        public int read() throws IOException {
+//                            Toast.makeText(MainActivity.this, "InputStreamReader error", Toast.LENGTH_SHORT).show();
+                            Log.d ("myError","inputStreamReader error");
+                            return 0;
+                        }
+                    };
+
+//                    Reader rdr = new InputStreamReader(isr);
 
                     strResult = "error: before buffered reader";
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream())); //???
+
+                    BufferedReader reader = new BufferedReader(isr); //???
                     strResult = "error: after buffered reader";
 
                     StringBuffer json = new StringBuffer(1024);
@@ -74,7 +88,6 @@ public class MainActivity extends AppCompatActivity {
 
                     while ((tmp = reader.readLine()) != null) {
                         json.append(tmp).append("\n");
-                        if(tmp.contains("NJ")) Toast.makeText(getApplication().getApplicationContext(), "NJ", Toast.LENGTH_SHORT).show();
                     }
                     reader.close();
 
@@ -98,6 +111,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                         TextView tv = (TextView) findViewById(R.id.tvBanner);
                         tv.setText(strResult + "\n" + e.toString());
+                        Log.d("MyError","Data pull not working (maybe network connection issue?" + e.toString());
                     Toast.makeText(MainActivity.this, strResult + "\n" + e.toString(), Toast.LENGTH_SHORT).show();
                 }
 
@@ -108,10 +122,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         } );    // end of thread
-
         t.run();
-
-
         btn.setText("Refresh");
 
     }
