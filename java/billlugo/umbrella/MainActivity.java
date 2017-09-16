@@ -54,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
         Button btn = (Button) findViewById(R.id.button);
         btn.setText("getting weather...");
 
+
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -63,7 +64,6 @@ public class MainActivity extends AppCompatActivity {
 
                     URL url = new URL(strUrl);
                     HttpURLConnection connection = (HttpURLConnection) url.openConnection();    // needs to run on a thread
-
                     strResult = "error: before InputStreamReader";
 
                     // Error - MainThread Exception somehow
@@ -91,6 +91,7 @@ public class MainActivity extends AppCompatActivity {
                         json.append(tmp).append("\n");
                     }
                     reader.close();
+//                    Log.d("jsonData",json.toString() + " |tmp: " + tmp);
                     strResult = "error: after readLine loop";
 
 
@@ -114,20 +115,16 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
 //                        TextView tv = (TextView) findViewById(R.id.tvBanner);
 //                        tv.setText(strResult + "\n" + e.toString());
-                        Log.d("MyError","Data pull not working (maybe network connection issue?" + e.toString());
+                        Log.d("MyError","Data pull not working (maybe network connection issue?)" + e.toString());
                         Log.d("MyErrorLocation", strResult);
 //                    Toast.makeText(MainActivity.this, strResult + "\n" + e.toString(), Toast.LENGTH_SHORT).show();
                 }
-
-
-
-
 
 
             }
         } );    // end of thread
         t.start();
         btn.setText("Refresh");
-
+//        tv.setText(data);
     }
 }
