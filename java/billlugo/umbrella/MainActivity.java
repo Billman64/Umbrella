@@ -1,6 +1,8 @@
 package billlugo.umbrella;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -9,7 +11,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -29,9 +30,7 @@ public class MainActivity extends AppCompatActivity {
 
         TextView tv = (TextView) findViewById(R.id.tvBanner);
         tv.setFocusable(false);
-
     }
-
 
     public void getWeather(View view) {
 
@@ -56,6 +55,14 @@ public class MainActivity extends AppCompatActivity {
 
 
         Thread t = new Thread(new Runnable() {
+
+            // create a handler to communicate JSON data back to main thread
+            private final Handler handler = new Handler() { //TODO: handler potential memory leak, since it's nested
+                public void handleMessage(Message msg){
+                    String response = msg.getData().getString("message");
+                }
+            };
+
             @Override
             public void run() {
 
@@ -71,7 +78,7 @@ public class MainActivity extends AppCompatActivity {
                     InputStreamReader isr = new InputStreamReader(connection.getInputStream()) {
                         @Override
                         public int read() throws IOException {
-                            Toast.makeText(MainActivity.this, "InputStreamReader error", Toast.LENGTH_SHORT).show();
+//                            Toast.makeText(MainActivity.this, "InputStreamReader error", Toast.LENGTH_SHORT).show();
                             Log.d ("myError","inputStreamReader error");
                             return 0;
                         }
@@ -94,23 +101,23 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.d("jsonData",json.toString() + " |tmp: " + tmp);
                     strResult = "error: after readLine loop";
 
-
                     JSONObject data = new JSONObject(json.toString());
                     strResult = "error: after JSONObject initialization";
 
                     if (data.length()==0) {
                         strResult = "error: zero-length data";
-                        Toast.makeText(getApplication().getApplicationContext(), strResult, Toast.LENGTH_SHORT).show();
+//                        Toast.makeText(getApplication().getApplicationContext(), strResult, Toast.LENGTH_SHORT).show();
                     } else {
-//                        TextView tv = (TextView) findViewById(R.id.tvBanner);
                         strResult = "error after data length>0";
-
-
-//                        tv.setText(data.length());
-//                        Toast.makeText(getApplication().getApplicationContext(), "data length: " + data.length(), Toast.LENGTH_SHORT).show();
+                        Log.d("dataSample",data.toString().substring(0,50));
                     }
 
-
+                    // send JSON data back to main thread via a bundled message object
+                    Message msgObj = handler.obtainMessage();
+                    Bundle bundle = new Bundle();
+                    bundle.putString("message", data.toString());
+                    msgObj.setData(bundle);
+                    handler.sendMessage(msgObj);
 
                 } catch (Exception e) {
 //                        TextView tv = (TextView) findViewById(R.id.tvBanner);
