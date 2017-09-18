@@ -2,7 +2,6 @@ package billlugo.umbrella;
 
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
@@ -36,11 +35,13 @@ public class MainActivity extends AppCompatActivity {
 
         //TODO: error-trap zip input
 
-        TextView tv = (TextView) findViewById(R.id.tvBanner);
+        final TextView tv = (TextView) findViewById(R.id.tvBanner);
         EditText et = (EditText) findViewById(R.id.etZIP);
         ListView lv = (ListView) findViewById(R.id.lvOutput);
 
         tv.setText(et.getText());
+
+        final Handler handler = new Handler(getApplicationContext().getMainLooper());
 
 //        String arr[] = new String[12];
 //        arr[0] = "asdf";
@@ -52,16 +53,9 @@ public class MainActivity extends AppCompatActivity {
         tv.setText(strUrl);
         Button btn = (Button) findViewById(R.id.button);
         btn.setText("getting weather...");
-
+        final String strData;
 
         Thread t = new Thread(new Runnable() {
-
-            // create a handler to communicate JSON data back to main thread
-            private final Handler handler = new Handler() { //TODO: handler potential memory leak, since it's nested
-                public void handleMessage(Message msg){
-                    String response = msg.getData().getString("message");
-                }
-            };
 
             @Override
             public void run() {
@@ -101,7 +95,7 @@ public class MainActivity extends AppCompatActivity {
 //                    Log.d("jsonData",json.toString() + " |tmp: " + tmp);
                     strResult = "error: after readLine loop";
 
-                    JSONObject data = new JSONObject(json.toString());
+                    final JSONObject data = new JSONObject(json.toString());
                     strResult = "error: after JSONObject initialization";
 
                     if (data.length()==0) {
@@ -113,11 +107,27 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     // send JSON data back to main thread via a bundled message object
-                    Message msgObj = handler.obtainMessage();
-                    Bundle bundle = new Bundle();
-                    bundle.putString("message", data.toString());
-                    msgObj.setData(bundle);
-                    handler.sendMessage(msgObj);
+//                    Message msgObj = handler.obtainMessage();
+//                    Bundle bundle = new Bundle();
+//                    bundle.putString("message", data.toString());
+//                    msgObj.setData(bundle);
+
+                    handler.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            // main thread communication
+//                            strData = data.toString();
+                            tv.setText(data.toString());
+                        }
+                    });
+//                    handler.sendMessage(msgObj);
+
+                    // create a handler to communicate JSON data back to main thread
+//            private final Handler handler = new Handler() { //TODO: handler potential memory leak, since it's nested (clear on onDestroy())
+//                public void handleMessage(Message msg){
+//                    String response = msg.getData().getString("message");
+//                }
+//            };
 
                 } catch (Exception e) {
 //                        TextView tv = (TextView) findViewById(R.id.tvBanner);
